@@ -1,3 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>My Finland Susu</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,sans-serif;background:#0b1220;min-height:100vh;display:flex;justify-content:center;padding:12px}
+.app{background:#1a2332;width:100%;max-width:400px;border-radius:28px;padding:18px;color:#cbd5e1;border:1px solid #2a3441}
+.top{text-align:center}
+.top h2{color:white;margin:6px 0 2px;font-size:20px}
+.top .sub{font-size:13px;opacity:0.6}
+.pot{background:#111a29;border-radius:20px;padding:18px;text-align:center;margin:16px 0;border:1px solid #223}
+.pot .label{font-size:11px;letter-spacing:1px;opacity:0.5}
+.pot b{color:#22c55e;font-size:36px;display:block;margin:4px 0}
+.pot .remain{font-size:13px;opacity:0.6}
+.bar{background:#0f172a;height:10px;border-radius:20px;margin:12px 0;overflow:hidden;border:1px solid #2a3441}
+.fill{background:linear-gradient(90deg,#22c55e,#16a34a);height:100%;width:0%;transition:width 0.6s ease}
+.stats{font-size:12px;opacity:0.6}
+input{width:100%;padding:15px;border-radius:14px;border:1px solid #2a3441;background:#111a29;color:white;margin:6px 0;outline:none;font-size:15px}
+input:focus{border-color:#22c55e}
+.btn-green{width:100%;padding:16px;border-radius:14px;border:0;background:#22c55e;color:#052e16;font-weight:800;font-size:16px;margin-top:8px;cursor:pointer}
+.btn-green:active{transform:scale(0.98)}
+.btn-lock{width:100%;padding:14px;border-radius:14px;border:0;background:#2a3441;color:white;margin-top:16px;font-weight:600;cursor:pointer}
+.tip{font-size:11px;opacity:0.4;text-align:center;margin-top:10px;line-height:1.4}
+.history{margin-top:14px}
+.hist-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #223;font-size:14px}
+#tickPop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);font-size:90px;display:none;z-index:999;transition:0.3s}
+#tickPop.show{display:block;transform:translate(-50%,-50%) scale(1)}
+#login{position:fixed;inset:0;background:#0b1220;display:flex;justify-content:center;align-items:center;z-index:100;padding:20px}
+.login-box{background:#1a2332;width:100%;max-width:340px;border-radius:24px;padding:24px;text-align:center;border:1px solid #2a3441}
+</style>
+</head>
+<body>
+
+<div id="tickPop">✅</div>
+
+<!-- PASSWORD SCREEN -->
+<div id="login">
+  <div class="login-box">
+    <h2 style="color:white">🔒 Lock</h2>
+    <p style="opacity:0.6;font-size:13px" id="loginText">Create password first time</p>
+    <input id="passInput" type="password" placeholder="Enter password">
+    <button class="btn-green" onclick="handleLogin()" id="loginBtn">Create & Enter</button>
+    <p id="loginErr" style="color:#ff5a5a;font-size:13px"></p>
+  </div>
+</div>
+
+<div class="app">
+  <div class="top">
+    <h2>🇬🇭 My Finland Susu 🇫🇮</h2>
+    <div class="sub">Goal: GH₵41,695 • Sarpong George</div>
+  </div>
+
+  <div class="pot">
+    <div class="label">TOTAL SAVED</div>
+    <b id="totalTxt">GH₵0</b>
+    <div class="remain">Remaining: <span id="remainTxt">GH₵41,695</span></div>
+    <div class="bar"><div class="fill" id="fillBar"></div></div>
+    <div class="stats" id="statsTxt">0% done • 0 deposits</div>
+  </div>
+
+  <input id="amtInput" type="number" inputmode="numeric" placeholder="Deposit amount GH₵ e.g. 200">
+  <input id="noteInput" type="text" placeholder="Note e.g. Mason work">
+  <button class="btn-green" onclick="addDeposit()">+ Add Deposit & Tick ✓</button>
+
+  <div class="history" id="historyBox"></div>
+
+  <button class="btn-lock" onclick="lockApp()">Lock App 🔒</button>
+  <div class="tip">Tip: Do 200GH weekly = 41k in 4 years • 400GH weekly = 2 years</div>
+</div>
+
 <script>
 // --- TICK SOUND ---
 let audioCtx;
