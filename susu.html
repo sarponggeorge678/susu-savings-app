@@ -1,0 +1,83 @@
+<script>
+// --- TICK SOUND ---
+let audioCtx;
+function doTick(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    let o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type='triangle'; o.frequency.setValueAtTime(900, audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime+0.25);
+    g.gain.setValueAtTime(0.7, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+0.3);
+    o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.3);
+  }catch(e){}
+  if(navigator.vibrate) navigator.vibrate([60,30,60]);
+  let p=document.getElementById('tickPop');
+  p.classList.add('show'); setTimeout(()=>p.classList.remove('show'),700);
+}
+
+// --- PASSWORD LOGIC ---
+async function hash(s){
+  let b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+async function handleLogin(){
+  let v=document.getElementById('passInput').value;
+  let err=document.getElementById('loginErr');
+  let saved=localStorage.getItem('fin_pass');
+  if(!v){err.textContent='Type password';return}
+  if(!saved){
+    if(v.length<4){err.textContent='4+ characters';return}
+    localStorage.setItem('fin_pass', await hash(v));
+    loginOk();
+  }else{
+    if(await hash(v)===saved) loginOk();
+    else err.textContent='Wrong password';
+  }
+}
+function loginOk(){
+  sessionStorage.setItem('logged','yes');
+  document.getElementById('login').style.display='none';
+}
+function lockApp(){ sessionStorage.removeItem('logged'); location.reload(); }
+// check on load
+(function(){
+  let saved=localStorage.getItem('fin_pass');
+  if(saved){
+    document.getElementById('loginText').textContent='Enter password to unlock';
+    document.getElementById('loginBtn').textContent='Unlock';
+  }
+  if(sessionStorage.getItem('logged')==='yes') document.getElementById('login').style.display='none';
+  document.getElementById('passInput').addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
+})();
+
+// --- SUSU DATA ---
+const GOAL=41695;
+let list=JSON.parse(localStorage.getItem('fin_susu_data')||'[]');
+function saveData(){ localStorage.setItem('fin_susu_data', JSON.stringify(list)); render(); }
+function addDeposit(){
+  let amt=parseFloat(document.getElementById('amtInput').value);
+  let note=document.getElementById('noteInput').value.trim()||'Deposit';
+  if(!amt) return alert('Enter amount');
+  list.unshift({amt, note, date:new Date().toLocaleDateString()});
+  document.getElementById('amtInput').value=''; document.getElementById('noteInput').value='';
+  saveData(); doTick();
+}
+function delItem(i){ if(confirm('Delete this?')){ list.splice(i,1); saveData(); } }
+function render(){
+  let total=list.reduce((s,x)=>s+x.amt,0);
+  document.getElementById('totalTxt').textContent='GH₵'+total.toLocaleString();
+  document.getElementById('remainTxt').textContent='GH₵'+(GOAL-total).toLocaleString();
+  let pct=Math.min(100, Math.round(total/GOAL*100));
+  document.getElementById('fillBar').style.width=pct+'%';
+  document.getElementById('statsTxt').textContent=pct+'% done • '+list.length+' deposits';
+  let box=document.getElementById('historyBox');
+  box.innerHTML = list.length ? 'History (newest first)' : '';
+  list.forEach((d,i)=>{
+    box.innerHTML+=`<div class="hist-item"><div>✓ <b>GH₵${d.amt}</b> - ${d.note}<br><span style="opacity:0.5;font-size:12px">${d.date}</span></div><div onclick="delItem(${i})" style="color:#ff5a5a;cursor:pointer;padding:5px">x</div></div>`;
+  });
+}
+render();
+</script>
+</body>
+</html>
